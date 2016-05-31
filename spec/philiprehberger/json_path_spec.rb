@@ -165,4 +165,132 @@ RSpec.describe Philiprehberger::JsonPath do
       expect(result).to eq(['Alice', 'Bob'])
     end
   end
+
+  describe 'index access' do
+    it 'accesses first element' do
+      data = { 'items' => [10, 20, 30] }
+      result = described_class.query(data, '$.items[0]')
+      expect(result).to eq([10])
+    end
+
+    it 'accesses middle element' do
+      data = { 'items' => [10, 20, 30] }
+      result = described_class.query(data, '$.items[1]')
+      expect(result).to eq([20])
+    end
+
+    it 'accesses last element by index' do
+      data = { 'items' => [10, 20, 30] }
+      result = described_class.query(data, '$.items[2]')
+      expect(result).to eq([30])
+    end
+  end
+
+  describe 'filter expressions (extended)' do
+    let(:data) do
+      {
+        'products' => [
+          { 'name' => 'A', 'price' => 10, 'in_stock' => true },
+          { 'name' => 'B', 'price' => 25, 'in_stock' => false },
+          { 'name' => 'C', 'price' => 50, 'in_stock' => true },
+          { 'name' => 'D', 'price' => 5, 'in_stock' => true }
+        ]
+      }
+    end
+
+    it 'filters with != operator' do
+      result = described_class.query(data, "$.products[?(@.name!='A')].name")
+      expect(result).to eq(['B', 'C', 'D'])
+    end
+
+    it 'filters with > operator' do
+      result = described_class.query(data, '$.products[?(@.price>25)].name')
+      expect(result).to eq(['C'])
+    end
+
+    it 'filters with < operator' do
+      result = described_class.query(data, '$.products[?(@.price<10)].name')
+      expect(result).to eq(['D'])
+    end
+
+    it 'filters with boolean value' do
+      result = described_class.query(data, '$.products[?(@.in_stock==true)].name')
+      expect(result).to eq(['A', 'C', 'D'])
+    end
+
+    it 'returns empty when no items match filter' do
+      result = described_class.query(data, '$.products[?(@.price>1000)].name')
+      expect(result).to eq([])
+    end
+  end
+
+  describe 'slice expressions (extended)' do
+    let(:data) { { 'nums' => [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] } }
+
+    it 'slices from start index to end' do
+      result = described_class.query(data, '$.nums[7:]')
+      expect(result).to eq([7, 8, 9])
+    end
+
+    it 'slices from beginning to index' do
+      result = described_class.query(data, '$.nums[:3]')
+      expect(result).to eq([0, 1, 2])
+    end
+
+    it 'returns empty for slice on non-array' do
+      hash_data = { 'obj' => { 'a' => 1 } }
+      result = described_class.query(hash_data, '$.obj[0:2]')
+      expect(result).to eq([])
+    end
+  end
+
+  describe 'edge cases' do
+    it 'returns empty for key access on non-hash node' do
+      data = { 'val' => 42 }
+      result = described_class.query(data, '$.val.sub')
+      expect(result).to eq([])
+    end
+
+    it 'returns empty for index access on non-array' do
+      data = { 'val' => 'string' }
+      result = described_class.query(data, '$.val[0]')
+      expect(result).to eq([])
+    end
+
+    it 'returns empty for wildcard on scalar' do
+      data = { 'val' => 42 }
+      result = described_class.query(data, '$.val[*]')
+      expect(result).to eq([])
+    end
+
+    it 'handles deeply nested structures' do
+      data = { 'a' => { 'b' => { 'c' => { 'd' => { 'e' => 'deep' } } } } }
+      result = described_class.query(data, '$.a.b.c.d.e')
+      expect(result).to eq(['deep'])
+    end
+
+    it 'handles empty array' do
+      data = { 'items' => [] }
+      result = described_class.query(data, '$.items[*]')
+      expect(result).to eq([])
+    end
+
+    it 'handles empty hash' do
+      data = { 'obj' => {} }
+      result = described_class.query(data, '$.obj[*]')
+      expect(result).to eq([])
+    end
+
+    it 'handles filter on non-array returns empty' do
+      data = { 'val' => 'string' }
+      result = described_class.query(data, "$.val[?(@.x=='y')]")
+      expect(result).to eq([])
+    end
+
+    it 'handles existence filter on non-hash items in array' do
+      data = { 'items' => [1, 'string', { 'x' => 1 }] }
+      result = described_class.query(data, '$.items[?(@.x)]')
+      expect(result).to eq([{ 'x' => 1 }])
+    end
+  end
 end
