@@ -4,7 +4,7 @@
 [![Gem Version](https://badge.fury.io/rb/philiprehberger-json_path.svg)](https://rubygems.org/gems/philiprehberger-json_path)
 [![License](https://img.shields.io/github/license/philiprehberger/rb-json-path)](LICENSE)
 
-JSONPath expression evaluator for querying nested data structures. Supports dot notation, array indexing, wildcards, slices, and filter expressions.
+JSONPath expression evaluator with dot notation, wildcards, slices, and filters
 
 ## Requirements
 
