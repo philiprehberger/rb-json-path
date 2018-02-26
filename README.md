@@ -15,7 +15,7 @@ JSONPath expression evaluator with dot notation, wildcards, slices, and filters
 Add to your Gemfile:
 
 ```ruby
-gem 'philiprehberger-json_path'
+gem "philiprehberger-json_path"
 ```
 
 Or install directly:
@@ -97,8 +97,8 @@ Philiprehberger::JsonPath.query(data, "$.store.books[?(@.title=='Go')].price")
 
 ```bash
 bundle install
-bundle exec rspec      # Run tests
-bundle exec rubocop    # Check code style
+bundle exec rspec
+bundle exec rubocop
 ```
 
 ## License
