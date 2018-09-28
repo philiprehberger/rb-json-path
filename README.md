@@ -27,7 +27,7 @@ gem install philiprehberger-json_path
 ## Usage
 
 ```ruby
-require 'philiprehberger/json_path'
+require "philiprehberger/json_path"
 
 data = {
   'store' => {
