@@ -3,6 +3,7 @@
 [![Tests](https://github.com/philiprehberger/rb-json-path/actions/workflows/ci.yml/badge.svg)](https://github.com/philiprehberger/rb-json-path/actions/workflows/ci.yml)
 [![Gem Version](https://badge.fury.io/rb/philiprehberger-json_path.svg)](https://rubygems.org/gems/philiprehberger-json_path)
 [![License](https://img.shields.io/github/license/philiprehberger/rb-json-path)](LICENSE)
+[![Sponsor](https://img.shields.io/badge/sponsor-GitHub%20Sponsors-ec6cb9)](https://github.com/sponsors/philiprehberger)
 
 JSONPath expression evaluator with dot notation, wildcards, slices, and filters
 
