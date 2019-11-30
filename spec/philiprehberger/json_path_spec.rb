@@ -42,22 +42,22 @@ RSpec.describe Philiprehberger::JsonPath do
 
     it 'uses wildcard on array' do
       result = described_class.query(store_data, '$.store.books[*].title')
-      expect(result).to eq(['A', 'B', 'C', 'D'])
+      expect(result).to eq(%w[A B C D])
     end
 
     it 'uses array slice' do
       result = described_class.query(store_data, '$.store.books[0:2].title')
-      expect(result).to eq(['A', 'B'])
+      expect(result).to eq(%w[A B])
     end
 
     it 'uses filter with ==' do
       result = described_class.query(store_data, "$.store.books[?(@.category=='fiction')].title")
-      expect(result).to eq(['A', 'C'])
+      expect(result).to eq(%w[A C])
     end
 
     it 'uses filter with >' do
       result = described_class.query(store_data, '$.store.books[?(@.price>15)].title')
-      expect(result).to eq(['B', 'C'])
+      expect(result).to eq(%w[B C])
     end
 
     it 'uses filter with > on different threshold' do
@@ -111,7 +111,7 @@ RSpec.describe Philiprehberger::JsonPath do
         ]
       }
       result = described_class.query(data, '$.items[?(@.color)].name')
-      expect(result).to eq(['a', 'c'])
+      expect(result).to eq(%w[a c])
     end
   end
 
@@ -152,7 +152,7 @@ RSpec.describe Philiprehberger::JsonPath do
 
     it 'filters and accesses nested arrays' do
       result = described_class.query(nested, '$.users[?(@.age>28)].name')
-      expect(result).to eq(['Alice', 'Carol'])
+      expect(result).to eq(%w[Alice Carol])
     end
 
     it 'accesses nested array elements' do
@@ -162,7 +162,7 @@ RSpec.describe Philiprehberger::JsonPath do
 
     it 'slices nested arrays' do
       result = described_class.query(nested, '$.users[0:2].name')
-      expect(result).to eq(['Alice', 'Bob'])
+      expect(result).to eq(%w[Alice Bob])
     end
   end
 
@@ -200,7 +200,7 @@ RSpec.describe Philiprehberger::JsonPath do
 
     it 'filters with != operator' do
       result = described_class.query(data, "$.products[?(@.name!='A')].name")
-      expect(result).to eq(['B', 'C', 'D'])
+      expect(result).to eq(%w[B C D])
     end
 
     it 'filters with > operator' do
@@ -215,7 +215,7 @@ RSpec.describe Philiprehberger::JsonPath do
 
     it 'filters with boolean value' do
       result = described_class.query(data, '$.products[?(@.in_stock==true)].name')
-      expect(result).to eq(['A', 'C', 'D'])
+      expect(result).to eq(%w[A C D])
     end
 
     it 'returns empty when no items match filter' do
