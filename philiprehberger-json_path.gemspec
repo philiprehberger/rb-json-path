@@ -11,14 +11,14 @@ Gem::Specification.new do |spec|
   spec.summary = 'JSONPath expression evaluator with dot notation, wildcards, slices, and filters'
   spec.description = 'Evaluate JSONPath expressions against Ruby hashes and arrays. Supports dot notation, ' \
                      'array indexing, wildcards, slices, and filter expressions for querying nested data.'
-  spec.homepage      = 'https://philiprehberger.com/open-source-packages/ruby/philiprehberger-json_path'
+  spec.homepage = 'https://philiprehberger.com/open-source-packages/ruby/philiprehberger-json_path'
   spec.license = 'MIT'
   spec.required_ruby_version = '>= 3.1'
 
   spec.metadata['homepage_uri'] = spec.homepage
-  spec.metadata['source_code_uri']       = 'https://github.com/philiprehberger/rb-json-path'
-  spec.metadata['changelog_uri']         = 'https://github.com/philiprehberger/rb-json-path/blob/main/CHANGELOG.md'
-  spec.metadata['bug_tracker_uri']       = 'https://github.com/philiprehberger/rb-json-path/issues'
+  spec.metadata['source_code_uri'] = 'https://github.com/philiprehberger/rb-json-path'
+  spec.metadata['changelog_uri'] = 'https://github.com/philiprehberger/rb-json-path/blob/main/CHANGELOG.md'
+  spec.metadata['bug_tracker_uri'] = 'https://github.com/philiprehberger/rb-json-path/issues'
   spec.metadata['rubygems_mfa_required'] = 'true'
 
   spec.files = Dir['lib/**/*.rb', 'LICENSE', 'README.md', 'CHANGELOG.md']
