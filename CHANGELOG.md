@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-04-03
+
+### Added
+- Recursive descent operator `..` for matching keys at any nesting depth
+- `JsonPath.count(data, path)` method to return number of matches
+- `JsonPath.values(data, path)` method as an alias for `query`
+- Negation filter `!` support: `$[?(!@.key)]` matches items without a key
+- Filter comparison with `@.key.length` for arrays and strings
+
 ## [0.1.7] - 2026-03-31
 
 ### Added

@@ -8,9 +8,10 @@ Gem::Specification.new do |spec|
   spec.authors = ['philiprehberger']
   spec.email = ['philiprehberger@users.noreply.github.com']
 
-  spec.summary = 'JSONPath expression evaluator with dot notation, wildcards, slices, and filters'
+  spec.summary = 'JSONPath expression evaluator with dot notation, wildcards, slices, filters, and recursive descent'
   spec.description = 'Evaluate JSONPath expressions against Ruby hashes and arrays. Supports dot notation, ' \
-                     'array indexing, wildcards, slices, and filter expressions for querying nested data.'
+                     'array indexing, wildcards, slices, filter expressions, recursive descent, and ' \
+                     'length comparisons for querying nested data.'
   spec.homepage = 'https://philiprehberger.com/open-source-packages/ruby/philiprehberger-json_path'
   spec.license = 'MIT'
   spec.required_ruby_version = '>= 3.1'
