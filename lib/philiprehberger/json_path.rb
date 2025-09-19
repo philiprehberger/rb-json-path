@@ -52,6 +52,20 @@ module Philiprehberger
       !query(data, path).empty?
     end
 
+    # Return the canonical JSONPath strings for every match of an expression
+    #
+    # Each returned path is an unambiguous JSONPath that, when re-evaluated,
+    # resolves to the single element it identifies. Paths are returned in
+    # document order. Returns an empty array when no matches exist.
+    #
+    # @param data [Hash, Array] the data structure to query
+    # @param path [String] JSONPath expression
+    # @return [Array<String>] canonical JSONPath strings for each match
+    def self.paths(data, path)
+      tokens = tokenize(path)
+      evaluate_with_paths(data, tokens).map { |_node, p| p }
+    end
+
     class << self
       private
 
@@ -278,6 +292,163 @@ module Philiprehberger
           end
         when Array
           node.each { |item| collect_recursive(item, key, results) }
+        end
+      end
+
+      SAFE_KEY = /\A[A-Za-z_][A-Za-z0-9_]*\z/
+
+      def evaluate_with_paths(data, tokens)
+        results = [[data, '$']]
+
+        tokens.each do |token|
+          results = results.flat_map { |node, path| apply_token_with_paths(node, path, token) }
+        end
+
+        results
+      end
+
+      def apply_token_with_paths(node, path, token)
+        case token[:type]
+        when :key
+          apply_key_with_paths(node, path, token[:value])
+        when :index
+          apply_index_with_paths(node, path, token[:value])
+        when :wildcard
+          apply_wildcard_with_paths(node, path)
+        when :slice
+          apply_slice_with_paths(node, path, token[:start], token[:end])
+        when :filter
+          apply_filter_with_paths(node, path, token[:key], token[:op], token[:value])
+        when :filter_exists
+          apply_filter_exists_with_paths(node, path, token[:key])
+        when :filter_not_exists
+          apply_filter_not_exists_with_paths(node, path, token[:key])
+        when :filter_length
+          apply_filter_length_with_paths(node, path, token[:key_path], token[:op], token[:value])
+        when :recursive
+          apply_recursive_with_paths(node, path, token[:value])
+        else
+          []
+        end
+      end
+
+      def key_segment(key)
+        str = key.to_s
+        SAFE_KEY.match?(str) ? ".#{str}" : "['#{str.gsub("'", "\\\\'")}']"
+      end
+
+      def apply_key_with_paths(node, path, key)
+        return [] unless node.is_a?(Hash)
+
+        sym_key = key.to_sym
+        if node.key?(key)
+          [[node[key], path + key_segment(key)]]
+        elsif node.key?(sym_key)
+          [[node[sym_key], path + key_segment(key)]]
+        else
+          []
+        end
+      end
+
+      def apply_index_with_paths(node, path, index)
+        return [] unless node.is_a?(Array)
+        return [] if index >= node.length || index < -node.length
+
+        normalized = index.negative? ? node.length + index : index
+        [[node[index], "#{path}[#{normalized}]"]]
+      end
+
+      def apply_wildcard_with_paths(node, path)
+        case node
+        when Array
+          node.each_with_index.map { |v, i| [v, "#{path}[#{i}]"] }
+        when Hash
+          node.map { |k, v| [v, path + key_segment(k)] }
+        else
+          []
+        end
+      end
+
+      def apply_slice_with_paths(node, path, start_idx, end_idx)
+        return [] unless node.is_a?(Array)
+
+        end_idx = node.length if end_idx.nil?
+        range = (start_idx...end_idx)
+        indices = range.to_a.select { |i| i >= 0 && i < node.length }
+        indices.map { |i| [node[i], "#{path}[#{i}]"] }
+      end
+
+      def apply_filter_with_paths(node, path, key, op, value)
+        return [] unless node.is_a?(Array)
+
+        matches = node.each_with_index.select do |item, _i|
+          next false unless item.is_a?(Hash)
+
+          actual = item[key] || item[key.to_sym]
+          next false if actual.nil? && !item.key?(key) && !item.key?(key.to_sym)
+
+          compare(actual, op, value)
+        end
+        matches.map { |item, i| [item, "#{path}[#{i}]"] }
+      end
+
+      def apply_filter_exists_with_paths(node, path, key)
+        return [] unless node.is_a?(Array)
+
+        matches = node.each_with_index.select do |item, _i|
+          next false unless item.is_a?(Hash)
+
+          item.key?(key) || item.key?(key.to_sym)
+        end
+        matches.map { |item, i| [item, "#{path}[#{i}]"] }
+      end
+
+      def apply_filter_not_exists_with_paths(node, path, key)
+        return [] unless node.is_a?(Array)
+
+        matches = node.each_with_index.reject do |item, _i|
+          next false unless item.is_a?(Hash)
+
+          item.key?(key) || item.key?(key.to_sym)
+        end
+        matches.map { |item, i| [item, "#{path}[#{i}]"] }
+      end
+
+      def apply_filter_length_with_paths(node, path, key_path, op, value)
+        return [] unless node.is_a?(Array)
+
+        matches = node.each_with_index.select do |item, _i|
+          next false unless item.is_a?(Hash)
+
+          resolved = resolve_key_path(item, key_path)
+          next false if resolved.nil?
+
+          length = resolved.respond_to?(:length) ? resolved.length : nil
+          next false if length.nil?
+
+          compare(length, op, value)
+        end
+        matches.map { |item, i| [item, "#{path}[#{i}]"] }
+      end
+
+      def apply_recursive_with_paths(node, path, key)
+        results = []
+        collect_recursive_with_paths(node, path, key, results)
+        results
+      end
+
+      def collect_recursive_with_paths(node, path, key, results)
+        case node
+        when Hash
+          node.each do |k, v|
+            child_path = path + key_segment(k)
+            results << [v, child_path] if k.to_s == key
+            collect_recursive_with_paths(v, child_path, key, results)
+          end
+        when Array
+          node.each_with_index do |item, i|
+            collect_recursive_with_paths(item, "#{path}[#{i}]", key, results)
+          end
         end
       end
 
