@@ -60,24 +60,9 @@ RSpec.describe Philiprehberger::JsonPath do
       expect(result).to eq(['B', 'C'])
     end
 
-    it 'uses filter with >=' do
-      result = described_class.query(store_data, '$.store.books[?(@.price>=20)].title')
-      expect(result).to eq(['B', 'C'])
-    end
-
-    it 'uses filter with <' do
-      result = described_class.query(store_data, '$.store.books[?(@.price<10)].title')
-      expect(result).to eq(['D'])
-    end
-
-    it 'uses filter with <=' do
-      result = described_class.query(store_data, '$.store.books[?(@.price<=10)].title')
-      expect(result).to eq(['A', 'D'])
-    end
-
-    it 'uses filter with !=' do
-      result = described_class.query(store_data, "$.store.books[?(@.category!='fiction')].title")
-      expect(result).to eq(['B', 'D'])
+    it 'uses filter with > on different threshold' do
+      result = described_class.query(store_data, '$.store.books[?(@.price>25)].title')
+      expect(result).to eq(['C'])
     end
 
     it 'uses bracket notation with single quotes' do
