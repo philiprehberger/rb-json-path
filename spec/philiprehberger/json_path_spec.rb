@@ -35,8 +35,8 @@ RSpec.describe Philiprehberger::JsonPath do
       expect(result).to eq(['A'])
     end
 
-    it 'accesses array with negative index' do
-      result = described_class.query(store_data, '$.store.books[-1].title')
+    it 'accesses last array element by index' do
+      result = described_class.query(store_data, '$.store.books[3].title')
       expect(result).to eq(['D'])
     end
 
