@@ -8,7 +8,7 @@ Gem::Specification.new do |spec|
   spec.authors = ['philiprehberger']
   spec.email = ['philiprehberger@users.noreply.github.com']
 
-  spec.summary = 'JSONPath expression evaluator for querying nested data structures'
+  spec.summary = 'JSONPath expression evaluator with dot notation, wildcards, slices, and filters'
   spec.description = 'Evaluate JSONPath expressions against Ruby hashes and arrays. Supports dot notation, ' \
                      'array indexing, wildcards, slices, and filter expressions for querying nested data.'
   spec.homepage = 'https://github.com/philiprehberger/rb-json-path'
