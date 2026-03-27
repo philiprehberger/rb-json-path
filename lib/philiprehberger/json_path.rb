@@ -54,13 +54,13 @@ module Philiprehberger
           when /\A\[\*\]/
             tokens << { type: :wildcard }
             remaining = remaining[3..]
-          when /\A\[(\-?\d+):(\-?\d+)\]/
+          when /\A\[(-?\d+):(-?\d+)\]/
             tokens << { type: :slice, start: Regexp.last_match(1).to_i, end: Regexp.last_match(2).to_i }
             remaining = remaining[Regexp.last_match(0).length..]
-          when /\A\[:(\-?\d+)\]/
+          when /\A\[:(-?\d+)\]/
             tokens << { type: :slice, start: 0, end: Regexp.last_match(1).to_i }
             remaining = remaining[Regexp.last_match(0).length..]
-          when /\A\[(\-?\d+):\]/
+          when /\A\[(-?\d+):\]/
             tokens << { type: :slice, start: Regexp.last_match(1).to_i, end: nil }
             remaining = remaining[Regexp.last_match(0).length..]
           when /\A\[\?\(@\.(\w+)\s*(==|!=|>|>=|<|<=)\s*([^\]]+)\)\]/
