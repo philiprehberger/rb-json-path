@@ -55,6 +55,21 @@ Philiprehberger::JsonPath.exists?(data, '$.store.books')
 # => true
 ```
 
+### Matched paths
+
+Use `paths` to get canonical JSONPath strings for every match, rather than the values themselves. Each returned path re-evaluates back to the single element it identifies, making it handy for diffing, patching, or reporting.
+
+```ruby
+Philiprehberger::JsonPath.paths(data, '$.store.books[*].title')
+# => ["$.store.books[0].title", "$.store.books[1].title", "$.store.books[2].title"]
+
+Philiprehberger::JsonPath.paths(data, '$.store.books[?(@.price>22)]')
+# => ["$.store.books[0]", "$.store.books[1]"]
+
+Philiprehberger::JsonPath.paths(data, '$.missing')
+# => []
+```
+
 ### Recursive Descent
 
 ```ruby
@@ -136,6 +151,7 @@ Philiprehberger::JsonPath.query(data, '$.groups[?(@.members.length > 0)].name')
 | `JsonPath.first(data, path)` | Return the first match or nil |
 | `JsonPath.count(data, path)` | Return the number of matches |
 | `JsonPath.exists?(data, path)` | Check if any match exists |
+| `JsonPath.paths(data, path)` | Return canonical JSONPath strings for each match |
 
 ## Development
 

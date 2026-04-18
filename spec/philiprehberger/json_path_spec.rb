@@ -389,6 +389,85 @@ RSpec.describe Philiprehberger::JsonPath do
     end
   end
 
+  describe '.paths' do
+    it 'returns the root path for $' do
+      expect(described_class.paths({ 'a' => 1 }, '$')).to eq(['$'])
+    end
+
+    it 'returns the canonical path for a simple dotted expression' do
+      expect(described_class.paths({ 'a' => { 'b' => 1 } }, '$.a.b')).to eq(['$.a.b'])
+    end
+
+    it 'returns one path per match for wildcard expansion' do
+      data = { 'items' => [10, 20, 30] }
+      expect(described_class.paths(data, '$.items[*]')).to eq(['$.items[0]', '$.items[1]', '$.items[2]'])
+    end
+
+    it 'returns the canonical path for an array index' do
+      data = { 'items' => [10, 20, 30] }
+      expect(described_class.paths(data, '$.items[0]')).to eq(['$.items[0]'])
+    end
+
+    it 'returns an array slice as separate index paths' do
+      data = { 'items' => [10, 20, 30, 40] }
+      expect(described_class.paths(data, '$.items[*]'))
+        .to eq(['$.items[0]', '$.items[1]', '$.items[2]', '$.items[3]'])
+    end
+
+    it 'returns an empty array for non-matching expressions' do
+      expect(described_class.paths({ 'a' => 1 }, '$.missing')).to eq([])
+    end
+
+    it 'returns paths in document order' do
+      data = {
+        'store' => {
+          'books' => [
+            { 'title' => 'A' },
+            { 'title' => 'B' },
+            { 'title' => 'C' }
+          ]
+        }
+      }
+      expect(described_class.paths(data, '$.store.books[*].title')).to eq([
+                                                                            '$.store.books[0].title',
+                                                                            '$.store.books[1].title',
+                                                                            '$.store.books[2].title'
+                                                                          ])
+    end
+
+    it 'does not mutate the input' do
+      data = { 'items' => [{ 'name' => 'a' }, { 'name' => 'b' }] }
+      before = Marshal.load(Marshal.dump(data))
+      described_class.paths(data, '$.items[*].name')
+      expect(data).to eq(before)
+    end
+
+    it 'returns the same canonical path that resolves back to the value' do
+      data = { 'items' => [{ 'name' => 'a' }, { 'name' => 'b' }] }
+      paths = described_class.paths(data, '$.items[*].name')
+      paths.each_with_index do |p, i|
+        expect(described_class.query(data, p)).to eq([data['items'][i]['name']])
+      end
+    end
+
+    it 'emits index paths for filter matches' do
+      data = {
+        'items' => [
+          { 'name' => 'a', 'on' => true },
+          { 'name' => 'b', 'on' => false },
+          { 'name' => 'c', 'on' => true }
+        ]
+      }
+      expect(described_class.paths(data, '$.items[?(@.on==true)].name'))
+        .to eq(['$.items[0].name', '$.items[2].name'])
+    end
+
+    it 'emits paths for recursive descent matches' do
+      data = { 'a' => { 'b' => { 'target' => 1 }, 'target' => 2 } }
+      expect(described_class.paths(data, '$..target')).to contain_exactly('$.a.target', '$.a.b.target')
+    end
+  end
+
   describe 'edge cases' do
     it 'returns empty for key access on non-hash node' do
       data = { 'val' => 42 }
