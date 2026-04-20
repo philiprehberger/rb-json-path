@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-04-19
+
+### Added
+- `JsonPath.last(data, path)` — last matching value; symmetric with existing `.first`; returns `nil` on no match
+
 ## [0.3.0] - 2026-04-17
 
 ### Added

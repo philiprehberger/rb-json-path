@@ -34,6 +34,15 @@ module Philiprehberger
       query(data, path).first
     end
 
+    # Query data and return the last match
+    #
+    # @param data [Hash, Array] the data structure to query
+    # @param path [String] JSONPath expression
+    # @return [Object, nil] the last matching value or nil
+    def self.last(data, path)
+      query(data, path).last
+    end
+
     # Return the number of matches for a JSONPath expression
     #
     # @param data [Hash, Array] the data structure to query

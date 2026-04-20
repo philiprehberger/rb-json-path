@@ -125,6 +125,35 @@ RSpec.describe Philiprehberger::JsonPath do
     end
   end
 
+  describe '.last' do
+    it 'returns the last of multiple matches' do
+      expect(described_class.last(store_data, '$.store.books[*].title')).to eq('D')
+    end
+
+    it 'returns nil when no match' do
+      expect(described_class.last(store_data, '$.store.nonexistent')).to be_nil
+    end
+
+    it 'matches .first when only one result' do
+      expect(described_class.last(store_data, '$.store.name'))
+        .to eq(described_class.first(store_data, '$.store.name'))
+    end
+
+    it 'works with recursive descent paths' do
+      data = { a: [{ x: 1 }, { x: 2 }, { x: 3 }] }
+      expect(described_class.last(data, '$..x')).to eq(3)
+    end
+
+    it 'works with bracket notation paths' do
+      expect(described_class.last(store_data, "$.store['books'][*].title")).to eq('D')
+    end
+
+    it 'works with slice paths' do
+      data = { 'nums' => [0, 1, 2, 3, 4, 5] }
+      expect(described_class.last(data, '$.nums[1:4]')).to eq(3)
+    end
+  end
+
   describe '.exists?' do
     it 'returns true when path exists' do
       expect(described_class.exists?(store_data, '$.store.name')).to be true
