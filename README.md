@@ -48,6 +48,10 @@ Philiprehberger::JsonPath.values(data, '$.store.books[*].title')
 Philiprehberger::JsonPath.first(data, '$.store.books[0].title')
 # => "Ruby"
 
+items = { "items" => [{ "id" => 1 }, { "id" => 2 }, { "id" => 3 }] }
+Philiprehberger::JsonPath.first(items, "$.items[*].id") # => 1
+Philiprehberger::JsonPath.last(items, "$.items[*].id")  # => 3
+
 Philiprehberger::JsonPath.count(data, '$.store.books[*]')
 # => 3
 
@@ -149,6 +153,7 @@ Philiprehberger::JsonPath.query(data, '$.groups[?(@.members.length > 0)].name')
 | `JsonPath.query(data, path)` | Return all matches as an array |
 | `JsonPath.values(data, path)` | Alias for `query` |
 | `JsonPath.first(data, path)` | Return the first match or nil |
+| `JsonPath.last(data, path)` | Return the last match or nil |
 | `JsonPath.count(data, path)` | Return the number of matches |
 | `JsonPath.exists?(data, path)` | Check if any match exists |
 | `JsonPath.paths(data, path)` | Return canonical JSONPath strings for each match |
