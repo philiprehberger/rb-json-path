@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-05-01
+
+### Added
+- `JsonPath.update(data, path, &block)` — apply a block to every JSONPath match, replacing each with the block's return value. Mutates `data` in place; returns it for chaining. Raises when the path resolves to the root document.
+
 ## [0.4.0] - 2026-04-19
 
 ### Added

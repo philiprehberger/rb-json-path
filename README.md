@@ -130,6 +130,20 @@ Philiprehberger::JsonPath.query(data, '$.groups[?(@.members.length > 0)].name')
 # => ["team1"]
 ```
 
+### In-place Updates
+
+Apply a transformation to every match. Mutates the data and returns it for chaining.
+
+```ruby
+data = { 'users' => [{ 'name' => 'alice' }, { 'name' => 'bob' }] }
+
+Philiprehberger::JsonPath.update(data, '$.users[*].name', &:upcase)
+# data["users"].map { |u| u["name"] } => ["ALICE", "BOB"]
+
+# Increment every numeric price in a nested store
+Philiprehberger::JsonPath.update(catalog, '$..price') { |p| p * 1.10 }
+```
+
 ### Supported Syntax
 
 | Syntax | Description |
@@ -157,6 +171,7 @@ Philiprehberger::JsonPath.query(data, '$.groups[?(@.members.length > 0)].name')
 | `JsonPath.count(data, path)` | Return the number of matches |
 | `JsonPath.exists?(data, path)` | Check if any match exists |
 | `JsonPath.paths(data, path)` | Return canonical JSONPath strings for each match |
+| `JsonPath.update(data, path, &block)` | Replace every matched value with the block's return; mutates `data` in place |
 
 ## Development
 

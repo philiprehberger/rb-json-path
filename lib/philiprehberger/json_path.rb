@@ -75,6 +75,79 @@ module Philiprehberger
       evaluate_with_paths(data, tokens).map { |_node, p| p }
     end
 
+    # Apply a transformation to every JSONPath match in `data`.
+    #
+    # Mutates `data` in place and returns it for chaining. Each match is
+    # replaced with the block's return value. Skips matches that resolve
+    # to the document root (`"$"`). Use `Marshal.load(Marshal.dump(data))`
+    # first if you need to preserve the original.
+    #
+    # @param data [Hash, Array] the data to transform
+    # @param path [String] JSONPath expression
+    # @yield [value] each matched value
+    # @yieldreturn [Object] the replacement value
+    # @return [Hash, Array] the mutated data
+    # @raise [Error] when the path resolves to the root document
+    def self.update(data, path, &block)
+      raise Error, 'block required for update' unless block
+
+      paths(data, path).each do |canonical|
+        raise Error, 'Cannot update root document' if canonical == '$'
+
+        mutate_at(data, canonical, &block)
+      end
+      data
+    end
+
+    # @api private
+    def self.mutate_at(data, canonical, &block)
+      segments = canonical_segments(canonical)
+      *parent_path, last = segments
+      parent = parent_path.reduce(data) { |node, seg| descend(node, seg) }
+
+      if parent.is_a?(Hash)
+        key = parent.key?(last) ? last : last.to_sym
+        parent[key] = block.call(parent[key])
+      elsif parent.is_a?(Array)
+        idx = Integer(last)
+        parent[idx] = block.call(parent[idx])
+      end
+    end
+
+    # @api private
+    def self.canonical_segments(canonical)
+      remaining = canonical[1..]
+      segments = []
+
+      until remaining.empty?
+        case remaining
+        when /\A\.([A-Za-z_][A-Za-z0-9_]*)/
+          segments << ::Regexp.last_match(1)
+          remaining = remaining[::Regexp.last_match(0).length..]
+        when /\A\['((?:\\'|[^'])*)'\]/
+          segments << ::Regexp.last_match(1).gsub("\\'", "'")
+          remaining = remaining[::Regexp.last_match(0).length..]
+        when /\A\[(\d+)\]/
+          segments << ::Regexp.last_match(1)
+          remaining = remaining[::Regexp.last_match(0).length..]
+        else
+          raise Error, "Unparseable canonical path segment: #{remaining}"
+        end
+      end
+
+      segments
+    end
+
+    # @api private
+    def self.descend(node, segment)
+      if node.is_a?(Hash)
+        node.key?(segment) ? node[segment] : node[segment.to_sym]
+      elsif node.is_a?(Array)
+        node[Integer(segment)]
+      end
+    end
+    private_class_method :mutate_at, :canonical_segments, :descend
+
     class << self
       private
 

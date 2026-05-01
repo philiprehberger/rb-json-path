@@ -546,4 +546,43 @@ RSpec.describe Philiprehberger::JsonPath do
       expect(result).to eq([{ 'x' => 1 }])
     end
   end
+
+  describe '.update' do
+    it 'transforms every match by the block return value' do
+      data = { 'items' => [1, 2, 3] }
+      described_class.update(data, '$.items[*]') { |n| n * 10 }
+      expect(data).to eq('items' => [10, 20, 30])
+    end
+
+    it 'mutates string values via uppercase' do
+      data = { 'users' => [{ 'name' => 'alice' }, { 'name' => 'bob' }] }
+      described_class.update(data, '$.users[*].name', &:upcase)
+      expect(data['users'].map { |u| u['name'] }).to eq(%w[ALICE BOB])
+    end
+
+    it 'returns the mutated data for chaining' do
+      data = { 'a' => 1 }
+      expect(described_class.update(data, '$.a') { |v| v + 1 }).to be(data)
+    end
+
+    it 'is a no-op when no paths match' do
+      data = { 'a' => 1 }
+      described_class.update(data, '$.missing') { |v| v * 2 }
+      expect(data).to eq('a' => 1)
+    end
+
+    it 'raises when the path resolves to the root document' do
+      expect { described_class.update({ 'a' => 1 }, '$') { |v| v } }.to raise_error(Philiprehberger::JsonPath::Error)
+    end
+
+    it 'requires a block' do
+      expect { described_class.update({ 'a' => 1 }, '$.a') }.to raise_error(Philiprehberger::JsonPath::Error)
+    end
+
+    it 'updates a deeply nested array index' do
+      data = { 'matrix' => [[1, 2], [3, 4]] }
+      described_class.update(data, '$.matrix[1][0]') { |v| v + 100 }
+      expect(data['matrix']).to eq([[1, 2], [103, 4]])
+    end
+  end
 end
